@@ -15,113 +15,78 @@
 //******************************************************************************
 package daat;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.*;
+import org.openqa.selenium.By;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.DesiredCapabilities;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.net.URL;
+
 import io.appium.java_client.windows.WindowsDriver;
 
 public class CalculatorTest {
 
-    private static WindowsDriver CalculatorSession = null;
+    private static WindowsDriver driver = null;
     private static WebElement CalculatorResult = null;
 
     @BeforeClass
     public static void setup() {
         try {
             DesiredCapabilities capabilities = new DesiredCapabilities();
-            capabilities.setCapability("app", "Microsoft.WindowsCalculator_8wekyb3d8bbwe!App");
-            CalculatorSession = new WindowsDriver(new URL("http://127.0.0.1:4723"), capabilities);
-            CalculatorSession.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
+            capabilities.setCapability("app", "Root");
+            driver = new WindowsDriver(new URL("http://127.0.0.1:4723"), capabilities);
+            driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
 
-            CalculatorResult = CalculatorSession.findElementByAccessibilityId("CalculatorResults");
+            CalculatorResult = driver.findElementByClassName("MozillaWindowClass");
             Assert.assertNotNull(CalculatorResult);
 
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
         }
     }
 
-    @Before
-    public void Clear()
-    {
-        CalculatorSession.findElementByName("Clear").click();
-        Assert.assertEquals("0", _GetCalculatorResultText());
-    }
+//    @Before
+//    public void Clear() {
+//        CalculatorSession.findElementByName("Clear").click();
+//        Assert.assertEquals("0", _GetCalculatorResultText());
+//    }
 
     @AfterClass
-    public static void TearDown()
-    {
+    public static void TearDown() {
         CalculatorResult = null;
-        if (CalculatorSession != null) {
-            CalculatorSession.quit();
+        if (driver != null) {
+            driver.quit();
         }
-        CalculatorSession = null;
+        driver = null;
     }
 
     @Test
-    public void Addition()
-    {
-        CalculatorSession.findElementByName("One").click();
-        CalculatorSession.findElementByName("Plus").click();
-        CalculatorSession.findElementByName("Seven").click();
-        CalculatorSession.findElementByName("Equals").click();
-        Assert.assertEquals("8", _GetCalculatorResultText());
+    public void Reload() {
+        Actions actions = new Actions(driver);
+        actions.moveByOffset(559, 536).click().perform();
+        driver.findElementByXPath("/Pane[@ClassName='#32769']/Window[@ClassName='EmulatorContainer']/Pane[@ClassName='subWin']").getText();
+        screenshot();
     }
 
-    @Test
-    public void Combination()
-    {
-        CalculatorSession.findElementByName("Seven").click();
-        CalculatorSession.findElementByName("Multiply by").click();
-        CalculatorSession.findElementByName("Nine").click();
-        CalculatorSession.findElementByName("Plus").click();
-        CalculatorSession.findElementByName("One").click();
-        CalculatorSession.findElementByName("Equals").click();
-        CalculatorSession.findElementByName("Divide by").click();
-        CalculatorSession.findElementByName("Eight").click();
-        CalculatorSession.findElementByName("Equals").click();
-        Assert.assertEquals("8", _GetCalculatorResultText());
-    }
-
-    @Test
-    public void Division()
-    {
-        CalculatorSession.findElementByName("Eight").click();
-        CalculatorSession.findElementByName("Eight").click();
-        CalculatorSession.findElementByName("Divide by").click();
-        CalculatorSession.findElementByName("One").click();
-        CalculatorSession.findElementByName("One").click();
-        CalculatorSession.findElementByName("Equals").click();
-        Assert.assertEquals("8", _GetCalculatorResultText());
-    }
-
-    @Test
-    public void Multiplication()
-    {
-        CalculatorSession.findElementByName("Nine").click();
-        CalculatorSession.findElementByName("Multiply by").click();
-        CalculatorSession.findElementByName("Nine").click();
-        CalculatorSession.findElementByName("Equals").click();
-        Assert.assertEquals("81", _GetCalculatorResultText());
-    }
-
-    @Test
-    public void Subtraction()
-    {
-        CalculatorSession.findElementByName("Nine").click();
-        CalculatorSession.findElementByName("Minus").click();
-        CalculatorSession.findElementByName("One").click();
-        CalculatorSession.findElementByName("Equals").click();
-        Assert.assertEquals("8", _GetCalculatorResultText());
-    }
-
-    protected String _GetCalculatorResultText()
-    {
-        // trim extra text and whitespace off of the display value
-        return CalculatorResult.getText().replace("Display is", "").trim();
+    public void screenshot() {
+        try {
+            // you need import org.apache.commons.io.FileUtils so add org.apache.commons.io dependency
+            File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+//Captures mean the folder in java project location
+            FileUtils.copyFile(scrFile, new File(System.getProperty("user.dir") + "\\test-output\\" + "\\Captures\\" + "myScreenshot" + ".png"));
+            System.out.println("myScreenshot.png is generated go to  directory to check");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
 }
