@@ -1,11 +1,9 @@
-import daat.helper.FileHelper;
 import daat.helper.XMLHelper;
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.MobileElement;
 import io.appium.java_client.android.AndroidDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
-import java.io.File;
 import java.net.URL;
 import java.util.logging.Logger;
 
@@ -15,7 +13,6 @@ public class App {
     private static String source;
 
     public static void main(String[] args) {
-        FileHelper fileHelper = new FileHelper();
         AppiumDriver<MobileElement> driver = null;
         try {
             DesiredCapabilities caps = new DesiredCapabilities();
@@ -27,9 +24,7 @@ public class App {
 
             while (RUNNING_FOREVER) {
                 source = driver.getPageSource();
-                fileHelper.writeFile(System.getProperty("user.dir") + File.separator + "app.xml", source);
-                logger.info(XMLHelper.getText(System.getProperty("user.dir") + File.separator + "app.xml", "//android.widget.TextSwitcher"));
-                sleep(1000);
+                logger.info(XMLHelper.getText(source, "//android.widget.TextSwitcher"));
             }
         } catch (Exception e) {
             e.printStackTrace();
