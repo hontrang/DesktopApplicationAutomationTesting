@@ -134,6 +134,6 @@ public class XMLHelper {
     public static String getText(String xml, String node) {
         Node currentNode = goToNodeFromString(xml, node);
         NamedNodeMap attributes = currentNode.getAttributes();
-        return attributes.getNamedItem("content-desc").getTextContent();
+        return attributes.getNamedItem("text").getTextContent();
     }
 }

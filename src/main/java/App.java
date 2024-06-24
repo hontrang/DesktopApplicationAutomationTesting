@@ -9,11 +9,11 @@ import java.util.logging.Logger;
 
 public class App {
     private static final boolean RUNNING_FOREVER = true;
-    private static Logger logger = Logger.getLogger(App.class.getName());
-    private static String source;
+    private static final Logger logger = Logger.getLogger(App.class.getName());
 
     public static void main(String[] args) {
         AppiumDriver<MobileElement> driver = null;
+        String source;
         try {
             DesiredCapabilities caps = new DesiredCapabilities();
             caps.setCapability("platformName", "android");
@@ -24,7 +24,7 @@ public class App {
 
             while (RUNNING_FOREVER) {
                 source = driver.getPageSource();
-                logger.info(XMLHelper.getText(source, "//android.widget.TextSwitcher"));
+                logger.info(XMLHelper.getText(source, String.format("//android.widget.TextView[@text='%s']/preceding-sibling::android.widget.TextView[1]", "Hon Trang")));
             }
         } catch (Exception e) {
             e.printStackTrace();
