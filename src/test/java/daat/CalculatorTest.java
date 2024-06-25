@@ -20,13 +20,20 @@ import org.junit.*;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
+import java.io.File;
 import java.util.concurrent.TimeUnit;
 import java.net.URL;
 
 
 public class CalculatorTest {
 
+    /**
+     * Setting demo Secret key in Authenticator Application: MEUX76ZEJUVILATPJYGGCLFR4A7XI775
+     *
+     * */
+
     private static AndroidDriver driver;
+    private static final String USER_DIR = System.getProperty("user.dir");
 
     @BeforeClass
     public static void setup() {
@@ -34,9 +41,8 @@ public class CalculatorTest {
             URL appiumUrl = new URL("http://127.0.0.1:4723/wd/hub");
             DesiredCapabilities capabilities = new DesiredCapabilities();
             capabilities.setCapability("platformName", "Android");
-            capabilities.setCapability("deviceName", "RFCT20EKZSW");
-            capabilities.setCapability("appPackage", "com.salesforce.authenticator");
-            capabilities.setCapability("appium:appActivity", "com.toopher.android.sdk.activities.HomeScreenActivity" );
+            capabilities.setCapability("deviceName", "emulator-5554");
+            capabilities.setCapability("app", USER_DIR + File.separator + "ggauthen.apk");
             capabilities.setCapability("appium:noReset", "true");
             driver = new AndroidDriver(appiumUrl, capabilities);
             driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
@@ -59,10 +65,10 @@ public class CalculatorTest {
     @Test
     public void getOTP() {
         while (true) {
-            WebElement otp = driver.findElementById("com.salesforce.authenticator:id/oath_otp");
+            WebElement otp = driver.findElementById("com.google.android.apps.authenticator2:id/pin_value");
             System.out.println("OTP: " + otp.getText());
             try {
-                Thread.sleep(5000); // 5 seconds
+                Thread.sleep(3000); // 5 seconds
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
