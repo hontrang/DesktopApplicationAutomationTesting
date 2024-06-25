@@ -3,6 +3,7 @@ package daat.helper;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -19,6 +20,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.Map;
 
 public class XMLHelper {
@@ -34,6 +36,17 @@ public class XMLHelper {
             File inputFile = new File(xmlFile);
             docFactory = DocumentBuilderFactory.newInstance();
             doc = docFactory.newDocumentBuilder().parse(inputFile);
+            xPathNode = XPathFactory.newInstance().newXPath();
+        } catch (ParserConfigurationException | SAXException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void openXMLFileFromString(String xmlContent) {
+        try {
+            docFactory = DocumentBuilderFactory.newInstance();
+            InputSource is = new InputSource(new StringReader(xmlContent));
+            doc = docFactory.newDocumentBuilder().parse(is);
             xPathNode = XPathFactory.newInstance().newXPath();
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();
@@ -108,9 +121,19 @@ public class XMLHelper {
         return null;
     }
 
+    private static Node goToNodeFromString(String xml, String node) {
+        openXMLFileFromString(xml);
+        try {
+            return (Node) xPathNode.compile(node).evaluate(doc, XPathConstants.NODE);
+        } catch (XPathExpressionException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public static String getText(String xml, String node) {
-        Node currentNode = goToNode(xml, node);
+        Node currentNode = goToNodeFromString(xml, node);
         NamedNodeMap attributes = currentNode.getAttributes();
-        return attributes.getNamedItem("content-desc").getTextContent();
+        return attributes.getNamedItem("text").getTextContent();
     }
 }
