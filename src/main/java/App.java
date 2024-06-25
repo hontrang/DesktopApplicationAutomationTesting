@@ -1,7 +1,8 @@
-import daat.helper.XMLHelper;
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.MobileElement;
 import io.appium.java_client.android.AndroidDriver;
+
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import java.net.URL;
@@ -23,8 +24,10 @@ public class App {
             driver = new AndroidDriver<>(new URL("http://127.0.0.1:4723/"), caps);
 
             while (RUNNING_FOREVER) {
-                source = driver.getPageSource();
-                logger.info(XMLHelper.getText(source, String.format("//android.widget.TextView[@text='%s']/preceding-sibling::android.widget.TextView[1]", "Hon Trang")));
+                WebElement otp = driver.findElementByXPath(String.format(
+                        "//android.widget.TextView[@text='%s']/../*[@resource-id='com.okta.android.auth:id/list_item_token_totp_text_view']",
+                        "Hon Trang"));
+                logger.info(otp.getText());
             }
         } catch (Exception e) {
             e.printStackTrace();
