@@ -15,38 +15,31 @@
 //******************************************************************************
 package daat;
 
-import org.apache.commons.io.FileUtils;
+import io.appium.java_client.android.AndroidDriver;
 import org.junit.*;
-import org.openqa.selenium.By;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.net.URL;
 
-import io.appium.java_client.windows.WindowsDriver;
 
 public class CalculatorTest {
 
-    private static WindowsDriver driver = null;
-    private static WebElement CalculatorResult = null;
+    private static AndroidDriver driver;
 
     @BeforeClass
     public static void setup() {
         try {
+            URL appiumUrl = new URL("http://127.0.0.1:4723/wd/hub");
             DesiredCapabilities capabilities = new DesiredCapabilities();
-            capabilities.setCapability("app", "Root");
-            driver = new WindowsDriver(new URL("http://127.0.0.1:4723"), capabilities);
+            capabilities.setCapability("platformName", "Android");
+            capabilities.setCapability("deviceName", "RFCT20EKZSW");
+            capabilities.setCapability("appPackage", "com.salesforce.authenticator");
+            capabilities.setCapability("appium:appActivity", "com.toopher.android.sdk.activities.HomeScreenActivity" );
+            capabilities.setCapability("appium:noReset", "true");
+            driver = new AndroidDriver(appiumUrl, capabilities);
             driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
-
-            CalculatorResult = driver.findElementByClassName("MozillaWindowClass");
-            Assert.assertNotNull(CalculatorResult);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -54,15 +47,9 @@ public class CalculatorTest {
         }
     }
 
-//    @Before
-//    public void Clear() {
-//        CalculatorSession.findElementByName("Clear").click();
-//        Assert.assertEquals("0", _GetCalculatorResultText());
-//    }
 
     @AfterClass
     public static void TearDown() {
-        CalculatorResult = null;
         if (driver != null) {
             driver.quit();
         }
@@ -70,23 +57,15 @@ public class CalculatorTest {
     }
 
     @Test
-    public void Reload() {
-        Actions actions = new Actions(driver);
-        actions.moveByOffset(559, 536).click().perform();
-        driver.findElementByXPath("/Pane[@ClassName='#32769']/Window[@ClassName='EmulatorContainer']/Pane[@ClassName='subWin']").getText();
-        screenshot();
-    }
-
-    public void screenshot() {
-        try {
-            // you need import org.apache.commons.io.FileUtils so add org.apache.commons.io dependency
-            File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-//Captures mean the folder in java project location
-            FileUtils.copyFile(scrFile, new File(System.getProperty("user.dir") + "\\test-output\\" + "\\Captures\\" + "myScreenshot" + ".png"));
-            System.out.println("myScreenshot.png is generated go to  directory to check");
-        } catch (IOException ex) {
-            ex.printStackTrace();
+    public void getOTP() {
+        while (true) {
+            WebElement otp = driver.findElementById("com.salesforce.authenticator:id/oath_otp");
+            System.out.println("OTP: " + otp.getText());
+            try {
+                Thread.sleep(5000); // 5 seconds
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
-
 }
