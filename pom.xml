@@ -82,7 +82,7 @@
                             <archive>
                                 <manifest>
                                     <mainClass>
-                                        Main
+                                        daat.Main
                                     </mainClass>
                                 </manifest>
                             </archive>

@@ -14,9 +14,9 @@ import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.MobileElement;
 import io.appium.java_client.android.AndroidDriver;
 
-public class App {
+public class Main {
     private static final boolean RUNNING_FOREVER = true;
-    private static final Logger logger = Logger.getLogger(App.class.getName());
+    private static final Logger logger = Logger.getLogger(Main.class.getName());
     private static String code = "";
     private static String currentCode = "";
 
