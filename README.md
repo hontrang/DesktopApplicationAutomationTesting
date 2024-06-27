@@ -1,4 +1,5 @@
 # DesktopApplicationAutomationTesting
+![Build Jar](https://github.com/hontrang/DesktopApplicationAutomationTesting/actions/workflows/ci.yml/badge.svg)
 
 ### Prerequisite
 Appium must be installed UiAutomator2
