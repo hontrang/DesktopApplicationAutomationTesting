@@ -1,13 +1,16 @@
 package daat;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
+import daat.helper.ConfigSingletonHelper;
 import daat.helper.FileHelper;
 import daat.helper.GoogleDriverHelper;
 import io.appium.java_client.AppiumDriver;
@@ -24,7 +27,7 @@ public class Main {
         AppiumDriver<MobileElement> driver = null;
         FileHelper fileHelper = new FileHelper();
         String credentialsFilePath = "credential.json";
-        String fileName = "code_new.txt";
+        String fileName = "code.txt";
         String userName = "hontrang";
         String arg;
 
@@ -43,16 +46,20 @@ public class Main {
 
         try {
             DesiredCapabilities caps = new DesiredCapabilities();
-            caps.setCapability("platformName", "android");
-            caps.setCapability("appium:automationName", "uiautomator2");
-            caps.setCapability("appium:deviceName", "emulator-5554");
-
-            driver = new AndroidDriver<>(new URL("http://127.0.0.1:4723/"), caps);
+            caps.setCapability("platformName",
+                    ConfigSingletonHelper.getInstance().getProperty("appium.caps.platformName"));
+            caps.setCapability("appium:automationName",
+                    ConfigSingletonHelper.getInstance().getProperty("appium.caps.automationName"));
+            caps.setCapability("appium:deviceName",
+                    ConfigSingletonHelper.getInstance().getProperty("appium.caps.deviceName"));
+            logger.log(Level.INFO, "Connecting to server: {0} ",
+                    ConfigSingletonHelper.getInstance().getProperty("appium.url"));
+            driver = new AndroidDriver<>(new URL(ConfigSingletonHelper.getInstance().getProperty("appium.url")), caps);
 
             while (RUNNING_FOREVER) {
                 if (scanUntilDigitsChanged(driver, userName)) {
                     logger.info("start upload file");
-                    fileHelper.writeFile(fileName, code.replace(" ", ""));
+                    fileHelper.writeFile(fileName, StringUtils.deleteWhitespace(code));
                     pushFileToGoogleDrive(credentialsFilePath, fileName);
                     logger.info("end upload file");
                     sleep(20000);

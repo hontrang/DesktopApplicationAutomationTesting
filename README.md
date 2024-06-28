@@ -18,3 +18,8 @@ emulator -list-avds
 ```bash
 emulator -avd Pixel_3_XL_API_30
 ```
+
+### AVD HEADLESS MODE
+```bash
+emulator -avd Pixel_3_XL_API_30  -no-window
+```
