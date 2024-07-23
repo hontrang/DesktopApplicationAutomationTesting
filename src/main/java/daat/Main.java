@@ -57,12 +57,16 @@ public class Main {
             driver = new AndroidDriver<>(new URL(ConfigSingletonHelper.getInstance().getProperty("appium.url")), caps);
 
             while (RUNNING_FOREVER) {
-                if (scanUntilDigitsChanged(driver, userName)) {
-                    logger.info("start upload file");
-                    fileHelper.writeFile(fileName, StringUtils.deleteWhitespace(code));
-                    pushFileToGoogleDrive(credentialsFilePath, fileName);
-                    logger.info("end upload file");
-                    sleep(20000);
+                try {
+                    if (scanUntilDigitsChanged(driver, userName)) {
+                        logger.info("start upload file");
+                        fileHelper.writeFile(fileName, StringUtils.deleteWhitespace(code));
+                        pushFileToGoogleDrive(credentialsFilePath, fileName);
+                        logger.info("end upload file");
+                        sleep(20000);
+                    }
+                } catch (Exception ex) {
+                    logger.info("Error check digit or upload to google drive");
                 }
             }
         } catch (Exception e) {
