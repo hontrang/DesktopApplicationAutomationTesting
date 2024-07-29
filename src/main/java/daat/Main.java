@@ -44,35 +44,45 @@ public class Main {
             }
         }
 
-        try {
-            DesiredCapabilities caps = new DesiredCapabilities();
-            caps.setCapability("platformName",
-                    ConfigSingletonHelper.getInstance().getProperty("appium.caps.platformName"));
-            caps.setCapability("appium:automationName",
-                    ConfigSingletonHelper.getInstance().getProperty("appium.caps.automationName"));
-            caps.setCapability("appium:deviceName",
-                    ConfigSingletonHelper.getInstance().getProperty("appium.caps.deviceName"));
-            logger.log(Level.INFO, "Connecting to server: {0} ",
-                    ConfigSingletonHelper.getInstance().getProperty("appium.url"));
-            driver = new AndroidDriver<>(new URL(ConfigSingletonHelper.getInstance().getProperty("appium.url")), caps);
-
-            while (RUNNING_FOREVER) {
-                try {
-                    if (scanUntilDigitsChanged(driver, userName)) {
-                        logger.info("start upload file");
-                        fileHelper.writeFile(fileName, StringUtils.deleteWhitespace(code));
-                        pushFileToGoogleDrive(credentialsFilePath, fileName);
-                        logger.info("end upload file");
-                        sleep(20000);
+        while (RUNNING_FOREVER) {
+            try {
+                while (driver == null) {
+                    DesiredCapabilities caps = new DesiredCapabilities();
+                    caps.setCapability("platformName",
+                            ConfigSingletonHelper.getInstance().getProperty("appium.caps.platformName"));
+                    caps.setCapability("appium:automationName",
+                            ConfigSingletonHelper.getInstance().getProperty("appium.caps.automationName"));
+                    caps.setCapability("appium:deviceName",
+                            ConfigSingletonHelper.getInstance().getProperty("appium.caps.deviceName"));
+                    logger.log(Level.INFO, "Connecting to server: {0} ",
+                            ConfigSingletonHelper.getInstance().getProperty("appium.url"));
+                    driver = new AndroidDriver<>(new URL(ConfigSingletonHelper.getInstance().getProperty("appium.url")),
+                            caps);
+                }
+    
+                while (RUNNING_FOREVER) {
+                    try {
+                        if (scanUntilDigitsChanged(driver, userName)) {
+                            logger.info("start upload file");
+                            fileHelper.writeFile(fileName, StringUtils.deleteWhitespace(code));
+                            pushFileToGoogleDrive(credentialsFilePath, fileName);
+                            logger.info("end upload file");
+                            sleep(20000);
+                        }
+                    } catch (Exception ex) {
+                        logger.info(ex.getMessage());
+                        logger.info("Error check digit or upload to google drive");
                     }
-                } catch (Exception ex) {
-                    logger.info("Error check digit or upload to google drive");
+                }
+            } catch (Exception e) {
+                logger.info("Connection to appium failed. Please make sure appium has been started");
+            } finally {
+                if (driver != null) {
+                    driver.quit();
+                    driver = null;
                 }
             }
-        } catch (Exception e) {
-            logger.info("Connection to appium failed. Please make sure appium has been started");
-        } finally {
-            driver.quit();
+            sleep(10000);
         }
     }
 

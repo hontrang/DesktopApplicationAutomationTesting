@@ -6,8 +6,6 @@ while true; do
   if [ "$is_active" -eq 0 ]; then
     echo "Salesforce authentication is not running. Restarting..."
     adb shell monkey -p com.salesforce.authenticator -c android.intent.category.LAUNCHER 1
-  else
-    echo "Salesforce authentication is running"
   fi
 
   sleep 5
