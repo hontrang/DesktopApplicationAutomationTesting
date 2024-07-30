@@ -9,7 +9,7 @@ else
 fi
 
 
-emulator -avd SFCC_AUTHENTICATION &
+emulator -avd Pixel_XL_API_30 &
 
 SCRIPT="check_authen_start.sh"
 (

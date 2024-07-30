@@ -7,4 +7,4 @@ else
   echo "No process ByPass2FA found"
 fi
 cd ~/sfcc_authen
-java -jar ByPass2FA.jar -u "Hon Trang" -n code.txt -c icauto_asics.json &
+java -jar ByPass2FA.jar

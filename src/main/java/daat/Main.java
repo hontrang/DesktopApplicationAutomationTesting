@@ -2,6 +2,7 @@ package daat;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,69 +21,61 @@ import io.appium.java_client.android.AndroidDriver;
 public class Main {
     private static final boolean RUNNING_FOREVER = true;
     private static final Logger logger = Logger.getLogger(Main.class.getName());
-    private static String code = "";
-    private static String currentCode = "";
+    private static String codeHon = "";
+    private static String currentCodeHon = "";
+    private static String codeHieu = "";
+    private static String currentCodeHieu = "";
+    private static GoogleDriverHelper driveHon;
+    private static GoogleDriverHelper driveHieu;
+    private static final String CREDENTIAL_HON = "icauto_asics.json";
+    private static final String CREDENTIAL_HIEU = "icauto_shiseido.json";
+    private static final String FILE_NAME_HON = "code.txt";
+    private static final String USER_NAME_HON = "Hon Trang";
+    private static final String FILE_NAME_HIEU = "code_hieu.txt";
+    private static final String USER_NAME_HIEU = "Hieu Nguyen";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws MalformedURLException {
         AppiumDriver<MobileElement> driver = null;
         FileHelper fileHelper = new FileHelper();
-        String credentialsFilePath = "credential.json";
-        String fileName = "code.txt";
-        String userName = "hontrang";
-        String arg;
-
-        for (int i = 0; i < args.length; i++) {
-            arg = args[i];
-            if (arg.equals("-c")) {
-                credentialsFilePath = args[i + 1];
-            }
-            if (arg.equals("-u")) {
-                userName = args[i + 1];
-            }
-            if (arg.equals("-n")) {
-                fileName = args[i + 1];
-            }
-        }
 
         while (RUNNING_FOREVER) {
-            try {
-                while (driver == null) {
-                    DesiredCapabilities caps = new DesiredCapabilities();
-                    caps.setCapability("platformName",
-                            ConfigSingletonHelper.getInstance().getProperty("appium.caps.platformName"));
-                    caps.setCapability("appium:automationName",
-                            ConfigSingletonHelper.getInstance().getProperty("appium.caps.automationName"));
-                    caps.setCapability("appium:deviceName",
-                            ConfigSingletonHelper.getInstance().getProperty("appium.caps.deviceName"));
-                    logger.log(Level.INFO, "Connecting to server: {0} ",
-                            ConfigSingletonHelper.getInstance().getProperty("appium.url"));
-                    driver = new AndroidDriver<>(new URL(ConfigSingletonHelper.getInstance().getProperty("appium.url")),
-                            caps);
-                }
-    
-                while (RUNNING_FOREVER) {
-                    try {
-                        if (scanUntilDigitsChanged(driver, userName)) {
+            if (driver == null) {
+                DesiredCapabilities caps = new DesiredCapabilities();
+                caps.setCapability("platformName",
+                        ConfigSingletonHelper.getInstance().getProperty("appium.caps.platformName"));
+                caps.setCapability("appium:automationName",
+                        ConfigSingletonHelper.getInstance().getProperty("appium.caps.automationName"));
+                caps.setCapability("appium:deviceName",
+                        ConfigSingletonHelper.getInstance().getProperty("appium.caps.deviceName"));
+                logger.log(Level.INFO, "Connecting to server: {0} ",
+                        ConfigSingletonHelper.getInstance().getProperty("appium.url"));
+                driver = new AndroidDriver<>(new URL(ConfigSingletonHelper.getInstance().getProperty("appium.url")),
+                        caps);
+
+                try {
+                    while (RUNNING_FOREVER) {
+                        if (scanUntilDigitsChanged(driver, USER_NAME_HON, USER_NAME_HIEU)) {
                             logger.info("start upload file");
-                            fileHelper.writeFile(fileName, StringUtils.deleteWhitespace(code));
-                            pushFileToGoogleDrive(credentialsFilePath, fileName);
+                            fileHelper.writeFile(FILE_NAME_HON, StringUtils.deleteWhitespace(codeHon));
+                            fileHelper.writeFile(FILE_NAME_HIEU, StringUtils.deleteWhitespace(codeHieu));
+                            pushFileToGoogleDriveHon();
+                            pushFileToGoogleDriveHieu();
                             logger.info("end upload file");
                             sleep(20000);
                         }
-                    } catch (Exception ex) {
-                        logger.info(ex.getMessage());
-                        logger.info("Error check digit or upload to google drive");
+                    }
+                } catch (Exception ex) {
+                    logger.info(ex.getMessage());
+                    logger.info("Error check digit or upload to google drive");
+                } finally {
+                    if (driver != null) {
+                        driver.quit();
+                        driver = null;
+                        logger.info("Killed connection");
                     }
                 }
-            } catch (Exception e) {
-                logger.info("Connection to appium failed. Please make sure appium has been started");
-            } finally {
-                if (driver != null) {
-                    driver.quit();
-                    driver = null;
-                }
+                logger.info("Restarting connection");
             }
-            sleep(10000);
         }
     }
 
@@ -104,10 +97,12 @@ public class Main {
         }
     }
 
-    private static void pushFileToGoogleDrive(String credentialsFilePath, String fileName) {
-        GoogleDriverHelper drive = new GoogleDriverHelper(credentialsFilePath);
+    private static void pushFileToGoogleDriveHon() {
+        if (driveHon == null) {
+            driveHon = new GoogleDriverHelper(CREDENTIAL_HON);
+        }
         try {
-            drive.updateFile(fileName, System.getProperty("user.dir") + java.io.File.separator + fileName,
+            driveHon.updateFile(FILE_NAME_HON, System.getProperty("user.dir") + java.io.File.separator + FILE_NAME_HON,
                     "text/plain text");
             logger.info("Pushed file to google drive");
         } catch (IOException e) {
@@ -115,13 +110,30 @@ public class Main {
         }
     }
 
-    private static boolean scanUntilDigitsChanged(AppiumDriver<MobileElement> driver, String userName) {
-        while (code.equals(currentCode)) {
-            currentCode = getCurrentDigits(driver, userName);
+    private static void pushFileToGoogleDriveHieu() {
+        if (driveHieu == null) {
+            driveHieu = new GoogleDriverHelper(CREDENTIAL_HIEU);
+        }
+        try {
+            driveHieu.updateFile(FILE_NAME_HIEU,
+                    System.getProperty("user.dir") + java.io.File.separator + FILE_NAME_HIEU,
+                    "text/plain text");
+            logger.info("Pushed file to google drive");
+        } catch (IOException e) {
+            logger.info("Error push file to google drive");
+        }
+    }
+
+    private static boolean scanUntilDigitsChanged(AppiumDriver<MobileElement> driver, String userNameHon,
+            String userNameHieu) {
+        while (codeHon.equals(currentCodeHon)) {
+            currentCodeHon = getCurrentDigits(driver, userNameHon);
             sleep(200);
         }
-        code = getCurrentDigits(driver, userName);
-        logger.log(Level.INFO, "New code generated: {0}", code);
+        codeHon = getCurrentDigits(driver, userNameHon);
+        codeHieu = getCurrentDigits(driver, userNameHieu);
+        logger.log(Level.INFO, "New code generated for user {0}: {1}", new Object[]{userNameHon, codeHon});
+        logger.log(Level.INFO, "New code generated for user {0}: {1}", new Object[]{userNameHieu, codeHieu});
         return true;
     }
 }
