@@ -1,41 +1,32 @@
 package daat;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.apache.commons.lang3.StringUtils;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.remote.DesiredCapabilities;
-
+import daat.builder.Account;
 import daat.helper.ConfigSingletonHelper;
 import daat.helper.FileHelper;
 import daat.helper.GoogleDriverHelper;
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.MobileElement;
 import io.appium.java_client.android.AndroidDriver;
+import org.apache.commons.lang3.StringUtils;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.remote.DesiredCapabilities;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Main {
     private static final boolean RUNNING_FOREVER = true;
     private static final Logger logger = Logger.getLogger(Main.class.getName());
-    private static String codeHon = "";
-    private static String currentCodeHon = "";
-    private static String codeHieu = "";
-    private static String currentCodeHieu = "";
-    private static GoogleDriverHelper driveHon;
-    private static GoogleDriverHelper driveHieu;
-    private static final String CREDENTIAL_HON = "icauto_asics.json";
-    private static final String CREDENTIAL_HIEU = "icauto_shiseido.json";
-    private static final String FILE_NAME_HON = "code.txt";
-    private static final String USER_NAME_HON = "Hon Trang";
-    private static final String FILE_NAME_HIEU = "code_hieu.txt";
-    private static final String USER_NAME_HIEU = "Hieu Nguyen";
 
     public static void main(String[] args) throws MalformedURLException {
         AppiumDriver<MobileElement> driver = null;
+        GoogleDriverHelper driveHon = new GoogleDriverHelper("icauto_asics.json");
+        GoogleDriverHelper driveHieu = new GoogleDriverHelper("icauto_shiseido.json");
+        Account accountHon = Account.builder().accountName("Hon Trang").fileName("code.txt").drive(driveHon).currentCode("").newCode("").build();
+        Account accountHieu = Account.builder().accountName("Hieu Nguyen").fileName("code_hieu.txt").drive(driveHieu).currentCode("").newCode("").build();
         FileHelper fileHelper = new FileHelper();
 
         while (RUNNING_FOREVER) {
@@ -54,12 +45,16 @@ public class Main {
 
                 try {
                     while (RUNNING_FOREVER) {
-                        if (scanUntilDigitsChanged(driver, USER_NAME_HON, USER_NAME_HIEU)) {
+                        if (scanUntilDigitsChanged(driver, accountHon)) {
+                            logger.info("start get code");
+                            String codeHon = getCurrentDigits(driver, accountHon.getAccountName());
+                            String codeHieu = getCurrentDigits(driver, accountHieu.getAccountName());
+                            fileHelper.writeFile(accountHon.getFileName(), StringUtils.deleteWhitespace(codeHon));
+                            fileHelper.writeFile(accountHieu.getFileName(), StringUtils.deleteWhitespace(codeHieu));
+                            logger.info("end get code");
                             logger.info("start upload file");
-                            fileHelper.writeFile(FILE_NAME_HON, StringUtils.deleteWhitespace(codeHon));
-                            fileHelper.writeFile(FILE_NAME_HIEU, StringUtils.deleteWhitespace(codeHieu));
-                            pushFileToGoogleDriveHon();
-                            pushFileToGoogleDriveHieu();
+                            pushFileToGoogleDrive(accountHon.getFileName(), driveHon);
+                            pushFileToGoogleDrive(accountHieu.getFileName(), driveHieu);
                             logger.info("end upload file");
                             sleep(20000);
                         }
@@ -85,6 +80,7 @@ public class Main {
                 "//android.widget.TextView[@text='%s']/..//*[@resource-id='com.salesforce.authenticator:id/oath_otp']",
                 userName));
         digits = otp.getText();
+        logger.log(Level.INFO, "Code for user {0}: {1}", new Object[]{userName, digits});
         logger.info(digits);
         return digits;
     }
@@ -97,12 +93,9 @@ public class Main {
         }
     }
 
-    private static void pushFileToGoogleDriveHon() {
-        if (driveHon == null) {
-            driveHon = new GoogleDriverHelper(CREDENTIAL_HON);
-        }
+    private static void pushFileToGoogleDrive(String fileName, GoogleDriverHelper drive) {
         try {
-            driveHon.updateFile(FILE_NAME_HON, System.getProperty("user.dir") + java.io.File.separator + FILE_NAME_HON,
+            drive.updateFile(fileName, System.getProperty("user.dir") + java.io.File.separator + fileName,
                     "text/plain text");
             logger.info("Pushed file to google drive");
         } catch (IOException e) {
@@ -110,30 +103,11 @@ public class Main {
         }
     }
 
-    private static void pushFileToGoogleDriveHieu() {
-        if (driveHieu == null) {
-            driveHieu = new GoogleDriverHelper(CREDENTIAL_HIEU);
-        }
-        try {
-            driveHieu.updateFile(FILE_NAME_HIEU,
-                    System.getProperty("user.dir") + java.io.File.separator + FILE_NAME_HIEU,
-                    "text/plain text");
-            logger.info("Pushed file to google drive");
-        } catch (IOException e) {
-            logger.info("Error push file to google drive");
-        }
-    }
-
-    private static boolean scanUntilDigitsChanged(AppiumDriver<MobileElement> driver, String userNameHon,
-            String userNameHieu) {
-        while (codeHon.equals(currentCodeHon)) {
-            currentCodeHon = getCurrentDigits(driver, userNameHon);
+    private static boolean scanUntilDigitsChanged(AppiumDriver<MobileElement> driver, Account account) {
+        while (account.getNewCode().equals(account.getCurrentCode())) {
+            account.setCurrentCode(getCurrentDigits(driver, account.getAccountName()));
             sleep(200);
         }
-        codeHon = getCurrentDigits(driver, userNameHon);
-        codeHieu = getCurrentDigits(driver, userNameHieu);
-        logger.log(Level.INFO, "New code generated for user {0}: {1}", new Object[]{userNameHon, codeHon});
-        logger.log(Level.INFO, "New code generated for user {0}: {1}", new Object[]{userNameHieu, codeHieu});
         return true;
     }
 }
