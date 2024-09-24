@@ -1,19 +1,19 @@
 #!/bin/bash
+kill_process() {
+  local process_name=$1
+  emulator_process=$(pgrep -f "$process_name")
+  echo "Tìm process $process_name"
+  if [ -n "$emulator_process" ]; then
+    kill -9 "$emulator_process"
+    echo "Đã kết thúc tiến trình $process_name"
+  else
+    echo "Không tìm thấy tiến trình $process_name"
+  fi
+}
 
-# Kiểm tra và giết tiến trình Java chạy file ByPass2FA.jar
-java_process=$(pgrep -f "java -jar $HOME/sfcc_authen/ByPass2FA.jar")
-if [ -n "$java_process" ]; then
-  kill -9 "$java_process"
-  echo "Đã kết thúc tiến trình Java chạy file ByPass2FA.jar"
-else
-  echo "Không tìm thấy tiến trình Java chạy file ByPass2FA.jar"
-fi
+kill_process "node"
+kill_process "sleep"
+kill_process "check_authen_start"
+kill_process "java -jar $HOME/sfcc_authen/ByPass2FA.jar"
+kill_process "$HOME/Android/Sdk/emulator/qemu/linux-x86_64/qemu-system-x86_64"
 
-# Kiểm tra và giết tiến trình giả lập Android
-emulator_process=$(pgrep -f "$HOME/Android/Sdk/emulator/qemu/linux-x86_64/qemu-system-x86_64")
-if [ -n "$emulator_process" ]; then
-  kill -9 "$emulator_process"
-  echo "Đã kết thúc tiến trình giả lập Android"
-else
-  echo "Không tìm thấy tiến trình giả lập Android"
-fi
