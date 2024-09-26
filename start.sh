@@ -1,5 +1,4 @@
 #!/bin/bash
-
 SCRIPT="reset_all_facilities.sh"
 
 while true; do
