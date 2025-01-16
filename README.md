@@ -30,6 +30,10 @@ emulator -avd Pixel_3_XL_API_30  -no-window
 ### Cài đặt remote desktop trên linux
 Hướng dẫn [Cài đặt remote desktop trên linux](https://medium.com/@riley.kao/wsl2-ubuntu20-04-gui-remote-desktop-connection-rdp-2bbd21d2fa71)
 
-
+### Build file jar locally
+```bash
+mvn package
+```
+Vào thư mục target và copy file jar có chứa "SNAPSHOT-jar-with-dependencies"
 ### Sửa lỗi CPU acceleration status: This user doesn't have permissions to use KVM (/dev/kvm).
 ![CPU acceleration status: This user doesn't have permissions to use KVM (/dev/kvm)](/assets/kvm.png)

@@ -60,7 +60,7 @@ public class GoogleDriverHelper {
         try {
             service = getDriveService();
         } catch (IOException ex) {
-            return;
+            ex.printStackTrace();
         }
     }
 
@@ -97,9 +97,9 @@ public class GoogleDriverHelper {
         // Build flow and trigger user authorization request.
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY,
                 clientSecrets, SCOPES)
-                        .setDataStoreFactory(data_store_factory)
-                        .setAccessType("offline")
-                        .build();
+                .setDataStoreFactory(data_store_factory)
+                .setAccessType("offline")
+                .build();
         LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
@@ -141,8 +141,9 @@ public class GoogleDriverHelper {
 
     private String getIdFromFileName(String fileName) throws IOException {
         List<File> list = getListFile();
-        for(File f: list){
-            if (f.getName().equals(fileName)) return f.getId();
+        for (File f : list) {
+            if (f.getName().equals(fileName))
+                return f.getId();
         }
         return null;
     }
@@ -155,9 +156,7 @@ public class GoogleDriverHelper {
         if (getIdFromFileName(fileName) == null) {
             upload(fileName, filePath, fileType);
         }
-        if (fileId == null) {
-            fileId = getIdFromFileName(fileName);
-        }
+        fileId = getIdFromFileName(fileName);
         java.io.File path = new java.io.File(filePath);
         File file = new File();
         file.setName(fileName);
